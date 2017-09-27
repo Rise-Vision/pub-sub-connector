@@ -1,0 +1,23 @@
+{
+  "name": "pub-sub-connector",
+  "version": "1.0.0",
+  "description": "Rise Vision Pub Sub Connector",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rise-Vision/pub-sub-connector.git"
+  },
+  "keywords": [
+    "PubSub"
+  ],
+  "author": "Rise Vision",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rise-Vision/pub-sub-connector/issues"
+  },
+  "homepage": "https://github.com/Rise-Vision/pub-sub-connector#readme"
+}
