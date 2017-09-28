@@ -1,9 +1,11 @@
 const http = require('http');
       port = 80;
 
+const podname = process.env.podname;
+
 const requestHandler = (request, response) => {
   response.writeHead(200, {"Content-Type": "application/json"});
-  response.end("Pub Sub Connector: " + JSON.stringify(server.address()));
+  response.end(`Pub Sub Connector: ${podname}`);
 };
 
 const server = http.createServer(requestHandler);
