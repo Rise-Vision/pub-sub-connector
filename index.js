@@ -1,5 +1,5 @@
 const express = require("express");
-const request = require("request");
+const rp = require('request-promise');
 const http = require("http");
 const pkg = require("./package.json");
 const bodyParser = require("body-parser");
@@ -11,33 +11,26 @@ const server = http.createServer(app);
 const podname = process.env.podname;
 
 function sendMessage(type, attributes) {
-  return new Promise((resolve, reject) => {
-    request.post({
-      url:  "http://messaging-service",
-      form: {
-              "message" : {
-                            "filePath": `${attributes.bucketId}/${attributes.objectId}`,
-                            "version": `${attributes.objectGeneration}`,
-                            "type": type
-                          }
-            }
-    }, (error, response, body) => {
-      if(error) return reject(502);
-
-      if (response.statusCode === 200) {
-        return resolve();
-      } else {
-        return reject(502);
-      }
-    });
-  });
+  const options = {
+        method: 'POST',
+        uri: 'http://messaging-service',
+        body: {
+                "message" : {
+                              "filePath": `${attributes.bucketId}/${attributes.objectId}`,
+                              "version": `${attributes.objectGeneration}`,
+                              "type": type
+                            }
+              },
+        json: true
+  };
+  return rp(options);
 }
 
 function handleFinalize(attributes) {
   if(attributes.overwroteGeneration){
-    return sendMessage("UPDATE", attributes);
+     return sendMessage("UPDATE", attributes);
   } else {
-    return sendMessage("ADD", attributes);
+     return sendMessage("ADD", attributes);
   }
 }
 
@@ -53,7 +46,7 @@ function handleDelete(attributes) {
 
 function handleRequest(body) {
 
-  return new Promise((resolve, reject) => {
+  //return new Promise((resolve, reject) => {
     const clientErrorCode = 400;
     if(!body || !body.message || !body.message.attributes) return reject(clientErrorCode);
 
@@ -67,7 +60,7 @@ function handleRequest(body) {
         return handleFinalize(attributes);
         break;
     }
-  });
+  //});
 }
 
 app.get('/pubsubconnector', function(req, res) {
