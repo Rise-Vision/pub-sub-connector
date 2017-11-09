@@ -14,8 +14,8 @@ app.get('/pubsubconnector', function(req, res) {
 });
 
 app.post('/pubsubconnector', jsonParser, function(req, res) {
-  console.log(`Messages Received ${req.body}`);
-  res.send(`Messages Received ${req.body}`);
+  console.log(`Messages Received ${JSON.stringify(req.body)}`);
+  res.send(`Messages Received ${JSON.stringify(req.body)}`);
 });
 
 server.listen(port, (err) => {
