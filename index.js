@@ -44,38 +44,39 @@ function handleDelete(attributes) {
   });
 }
 
-function handleRequest(body) {
+function handleBody(body) {
 
-  //return new Promise((resolve, reject) => {
-    const clientErrorCode = 400;
-    if(!body || !body.message || !body.message.attributes) return reject(clientErrorCode);
+  const clientErrorCode = 400;
+  if(!body || !body.message || !body.message.attributes) return Promise.reject(clientErrorCode);
 
-    const attributes = body.message.attributes;
+  const attributes = body.message.attributes;
 
-    switch (attributes.eventType) {
-      case "OBJECT_DELETE":
-        return handleDelete(attributes);
-        break;
-      case "OBJECT_FINALIZE":
-        return handleFinalize(attributes);
-        break;
-    }
-  //});
+  switch (attributes.eventType) {
+    case "OBJECT_DELETE":
+      return handleDelete(attributes);
+      break;
+    case "OBJECT_FINALIZE":
+      return handleFinalize(attributes);
+      break;
+  }
+}
+
+function handleRequest(req, res) {
+  console.log(`Messages Received ${JSON.stringify(req.body)}`);
+
+  handleBody(req.body).then(()=>{
+    res.sendStatus(200);
+  }).catch((errorCode)=>{
+    console.log("Error from MS", JSON.stringify(errorCode));
+    res.sendStatus(502);
+  });
 }
 
 app.get('/pubsubconnector', function(req, res) {
   res.send(`Pub Sub Connector: ${podname} ${pkg.version}`);
 });
 
-app.post('/pubsubconnector', jsonParser, function(req, res) {
-  console.log(`Messages Received ${JSON.stringify(req.body)}`);
-
-  handleRequest(req.body).then(()=>{
-    res.sendStatus(200)
-  }).catch((errorCode)=>{
-    res.sendStatus(errorCode)
-  });
-});
+app.post('/pubsubconnector', jsonParser, handleRequest);
 
 server.listen(port, (err) => {
   if (err) {
