@@ -45,10 +45,6 @@ function handleDelete(attributes) {
 }
 
 function handleBody(body) {
-
-  const clientErrorCode = 400;
-  if(!body || !body.message || !body.message.attributes) return Promise.reject(clientErrorCode);
-
   const attributes = body.message.attributes;
 
   switch (attributes.eventType) {
@@ -64,12 +60,18 @@ function handleBody(body) {
 function handleRequest(req, res) {
   console.log(`Messages Received ${JSON.stringify(req.body)}`);
 
-  handleBody(req.body).then(()=>{
-    res.sendStatus(200);
-  }).catch((errorCode)=>{
-    console.log("Error from MS", JSON.stringify(errorCode));
-    res.sendStatus(502);
-  });
+  const body = req.body;
+
+  if(!body || !body.message || !body.message.attributes) {
+    res.sendStatus(400);
+  } else {
+    handleBody(req.body).then(()=>{
+      res.sendStatus(200);
+    }).catch((errorCode)=>{
+      console.log("Error from MS", JSON.stringify(errorCode));
+      res.sendStatus(502);
+    });
+  }
 }
 
 app.get('/pubsubconnector', function(req, res) {
