@@ -35,13 +35,11 @@ function handleFinalize(attributes) {
 }
 
 function handleDelete(attributes) {
-  return new Promise((resolve, reject) => {
-    if(!attributes.overwrittenByGeneration){
-      return sendMessage("DELETE", attributes);
-    } else {
-      return resolve();
-    }
-  });
+  if(!attributes.overwrittenByGeneration){
+    return sendMessage("DELETE", attributes);
+  } else {
+    return Promise.resolve();
+  }
 }
 
 function handleBody(body) {
@@ -65,7 +63,7 @@ function handleRequest(req, res) {
   if(!body || !body.message || !body.message.attributes) {
     res.sendStatus(400);
   } else {
-    handleBody(req.body).then(()=>{
+    handleBody(body).then(()=>{
       res.sendStatus(200);
     }).catch((errorCode)=>{
       console.log("Error from MS", JSON.stringify(errorCode));
