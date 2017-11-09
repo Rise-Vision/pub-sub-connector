@@ -9,11 +9,11 @@ const app = express();
 const server = http.createServer(app);
 const podname = process.env.podname;
 
-app.get('/', function(req, res) {
+app.get('/pubsubconnector', function(req, res) {
   res.send(`Pub Sub Connector: ${podname} ${pkg.version}`);
 });
 
-app.post('/', jsonParser, function(req, res) {
+app.post('/pubsubconnector', jsonParser, function(req, res) {
   console.log(`Messages Received ${req.body}`);
   res.send(`Messages Received ${req.body}`);
 });
