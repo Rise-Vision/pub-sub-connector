@@ -1,16 +1,22 @@
+const express = require('express');
 const http = require('http');
-      port = 80;
-
 const pkg = require("./package.json");
-
+const bodyParser = require("body-parser");
+const jsonParser = bodyParser.json();
+const defaultPort = 80;
+const port = process.env.MS_PORT || defaultPort;
+const app = express();
+const server = http.createServer(app);
 const podname = process.env.podname;
 
-const requestHandler = (request, response) => {
-  response.writeHead(200, {"Content-Type": "application/json"});
-  response.end(`Pub Sub Connector: ${podname} ${pkg.version}`);
-};
+app.get('/', function(req, res) {
+  res.send(`Pub Sub Connector: ${podname} ${pkg.version}`);
+});
 
-const server = http.createServer(requestHandler);
+app.post('/', jsonParser, function(req, res) {
+  console.log(`Messages Received ${req.body}`);
+  res.send(`Messages Received ${req.body}`);
+});
 
 server.listen(port, (err) => {
   if (err) {

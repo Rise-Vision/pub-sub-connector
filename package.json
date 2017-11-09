@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/Rise-Vision/pub-sub-connector/issues"
   },
-  "homepage": "https://github.com/Rise-Vision/pub-sub-connector#readme"
+  "homepage": "https://github.com/Rise-Vision/pub-sub-connector#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2"
+  }
 }
