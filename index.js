@@ -1,5 +1,5 @@
 const express = require("express");
-const rp = require('request-promise');
+const rp = require('request-promise-native');
 const http = require("http");
 const pkg = require("./package.json");
 const bodyParser = require("body-parser");
