@@ -1,8 +1,11 @@
 const rp = require('request-promise-native');
+const gkeHostname = "messaging-service"
+const msHost = process.env.NODE_ENV === "test" ? "127.0.0.1:8081" : gkeHostname;
+
 
 const sendMessage = (type, attributes) => {
   const options = {
-        uri: 'http://messaging-service/pubsub',
+        uri: `http://${msHost}/messaging/pubsub`,
         body: {
                 "filePath": `${attributes.bucketId}/${attributes.objectId}`,
                 "version": `${attributes.objectGeneration}`,
