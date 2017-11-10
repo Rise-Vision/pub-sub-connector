@@ -4,7 +4,8 @@
   "description": "Rise Vision Pub Sub Connector",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "eslint --fix . && mocha -t 20000 test/unit/**",
+    "fulltest": "eslint --fix . && mocha -t 20000 test/**",
     "dev": "PSC_PORT=8080 node index.js",
     "start": "node index.js"
   },
@@ -26,5 +27,15 @@
     "express": "^4.16.2",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5"
+  },
+  "devDependencies": {
+    "eslint": "^4.10.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^4.0.1",
+    "simple-mock": "^0.8.0"
   }
 }
