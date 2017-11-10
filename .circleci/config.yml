@@ -1,6 +1,19 @@
 version: 2
 
 jobs:
+  "test":
+    docker: &DOCKERIMAGE
+      - image: jenkinsrise/cci-v2-docker-gcloud:0.0.4
+    steps:
+      - checkout
+      - restore_cache:
+          key: node-cache-{{ checksum "package.json" }}
+      - run: npm install
+      - save_cache:
+          key: node-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run: npm test
   "setup_package_version":
     docker: &DOCKERIMAGE
       - image: jenkinsrise/cci-v2-docker-gcloud:0.0.3
@@ -77,9 +90,11 @@ workflows:
   version: 2
   workflow1:
     jobs:
+      - "test"
       - "setup_package_version"
       - "build_image":
           requires:
+            - test
             - setup_package_version
       - "stage":
           requires:
