@@ -7,14 +7,30 @@ const rp = require('request-promise-native');
 const CLIENT_ERROR_CODE = 400;
 const MS_SERVER_ERROR_CODE = 502;
 const SUCCESS_CODE = 200;
-const TIMEOUT = 100;
 let res = {};
 
 describe("Connector", ()=>{
+  let resPromise = null;
+  let req = {};
 
   beforeEach(()=>{
-    res = {sendStatus: ()=>{}};
-    simple.mock(res, "sendStatus").returnWith(true);
+    req = {
+      body: {
+        message: {
+          attributes: {
+            objectId: 1111,
+            bucketId: 1111,
+            objectGeneration: 1111,
+            eventType: "OBJECT_FINALIZE"}
+        }
+      }
+    };
+
+    simple.mock(rp, "post").resolveWith();
+
+    resPromise = new Promise(resolve=>{
+      res = {sendStatus: resolve};
+    });
   });
 
   afterEach(()=>{
@@ -22,136 +38,104 @@ describe("Connector", ()=>{
   });
 
   it("return success when it can send message to MS", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, eventType: "OBJECT_FINALIZE"}}}};
-    simple.mock(rp, "post").resolveWith()
-
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], SUCCESS_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, SUCCESS_CODE);
+    });
   });
 
   it("send message with objectId, bucketId, objectGeneration and ADD type", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, eventType: "OBJECT_FINALIZE"}}}};
-    simple.mock(rp, "post").resolveWith()
-
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.deepEqual(rp.post.lastCall.args[0].body, {
-              "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
-              "version": `${req.body.message.attributes.objectGeneration}`,
-              "type": "ADD"
-             })
-    }, TIMEOUT);
+    assert.deepEqual(rp.post.lastCall.args[0].body, {
+      "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
+      "version": `${req.body.message.attributes.objectGeneration}`,
+      "type": "ADD"
+    });
   });
 
   it("send message with objectId, bucketId, objectGeneration and DELETE type", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, eventType: "OBJECT_DELETE"}}}};
-    simple.mock(rp, "post").resolveWith()
+    req.body.message.attributes.eventType = "OBJECT_DELETE";
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.deepEqual(rp.post.lastCall.args[0].body, {
-              "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
-              "version": `${req.body.message.attributes.objectGeneration}`,
-              "type": "DELETE"
-             })
-    }, TIMEOUT);
+    assert.deepEqual(rp.post.lastCall.args[0].body, {
+      "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
+      "version": `${req.body.message.attributes.objectGeneration}`,
+      "type": "DELETE"
+    })
   });
 
   it("send message with objectId, bucketId, objectGeneration and UPDATE type", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, overwroteGeneration: 1111, eventType: "OBJECT_FINALIZE"}}}};
-    simple.mock(rp, "post").resolveWith()
+    req.body.message.attributes.overwroteGeneration = 1111;
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.deepEqual(rp.post.lastCall.args[0].body, {
-              "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
-              "version": `${req.body.message.attributes.objectGeneration}`,
-              "type": "DELETE"
-             })
-    }, TIMEOUT);
+    assert.deepEqual(rp.post.lastCall.args[0].body, {
+      "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
+      "version": `${req.body.message.attributes.objectGeneration}`,
+      "type": "UPDATE"
+    })
   });
 
   it("skip sending message when there are a event type OBJECT_DELETE and a overwrittenByGeneration attribute", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, overwrittenByGeneration: 1111, eventType: "OBJECT_DELETE"}}}};
-    simple.mock(rp, "post").resolveWith()
+    req.body.message.attributes.eventType = "OBJECT_DELETE";
+    req.body.message.attributes.overwrittenByGeneration = "OBJECT_DELETE";
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert(!rp.post.called)
-    }, TIMEOUT);
+    assert(!rp.post.called);
   });
 
   it("return failure when it cannot send message to MS", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111, eventType: "OBJECT_FINALIZE"}}}};
+    simple.restore(rp, "post");
     simple.mock(rp, "post").rejectWith(new Error("Cannot connect to MS"))
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], MS_SERVER_ERROR_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, MS_SERVER_ERROR_CODE)
+    });
   });
 
   it("return failure when it is missing eventType", ()=>{
-
-    const req = {body: {message: {attributes: {objectId: 1111, bucketId: 1111, objectGeneration: 1111}}}};
+    assert(Reflect.deleteProperty(req.body.message.attributes, "eventType"));
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], CLIENT_ERROR_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, CLIENT_ERROR_CODE)
+    });
   });
 
   it("return failure when it is missing attributes", ()=>{
-
-    const req = {body: {message: {}}};
+    req = {body: {message: {}}};
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], CLIENT_ERROR_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, CLIENT_ERROR_CODE)
+    });
   });
 
   it("return failure when it is missing message", ()=>{
-
-    const req = {body: {}};
+    req = {body: {}};
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], CLIENT_ERROR_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, CLIENT_ERROR_CODE)
+    });
   });
 
   it("return failure when it is missing body", ()=>{
-
-    const req = {};
+    req = {};
 
     connector.handleRequest(req, res);
 
-    setTimeout(()=>{
-      assert.equal(res.sendStatus.lastCall.args[0], CLIENT_ERROR_CODE)
-    }, TIMEOUT);
-
+    return resPromise.then(code=>{
+      assert.equal(code, CLIENT_ERROR_CODE)
+    });
   });
 });
