@@ -56,7 +56,8 @@ const handleRequest = (req, res) => {
   if (!body || !body.message || !body.message.attributes || !body.message.attributes.eventType) {
     res.sendStatus(CLIENT_ERROR_CODE);
   } else {
-    handleBody(body).then(()=>{
+    handleBody(body).then((response)=>{
+      console.log(`Response from MS ${JSON.stringify(response)}`);
       res.sendStatus(SUCCESS_CODE);
     }).catch((error)=>{
       console.log("Error from MS", error);
