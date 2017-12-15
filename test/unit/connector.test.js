@@ -138,4 +138,14 @@ describe("Connector", ()=>{
       assert.equal(code, CLIENT_ERROR_CODE)
     });
   });
+
+  it("acknowledges receipt for unexpected event types", ()=>{
+    req.body.message.attributes.eventType = "XXXX";
+
+    connector.handleRequest(req, res);
+
+    return resPromise.then(code=>{
+      assert.equal(code, SUCCESS_CODE)
+    });
+  });
 });

@@ -41,7 +41,8 @@ const handleBody = (body) => {
     case "OBJECT_FINALIZE":
       return handleFinalize(attributes);
     default:
-      return Promise.reject(new Error("Not a valid eventType"));
+      console.warn(`Unexpected event type ${attributes.eventType}`);
+      return Promise.resolve();
   }
 }
 
