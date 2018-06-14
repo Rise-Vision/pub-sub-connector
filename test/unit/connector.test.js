@@ -112,6 +112,36 @@ describe("Connector", ()=>{
   it("send ADD message when file is restored", () => {
     req.body = {
       "message": {
+        "data": "ewogICJraW5kIjogInN0b3JhZ2Ujb2JqZWN0IiwKICAiaWQiOiAicmlzZW1lZGlhbGlicmFyeS1hYzU3ZGVmMi04MzRlLTRlY2QtOGI5MS00NGNhMTQ1MjRmZDAvdGVzdDEvMTUyOTAwNTM5Nzk4MzE5MCIsCiAgInNlbGZMaW5rIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL3N0b3JhZ2UvdjEvYi9yaXNlbWVkaWFsaWJyYXJ5LWFjNTdkZWYyLTgzNGUtNGVjZC04YjkxLTQ0Y2ExNDUyNGZkMC9vL3Rlc3QxIiwKICAibmFtZSI6ICJ0ZXN0MSIsCiAgImJ1Y2tldCI6ICJyaXNlbWVkaWFsaWJyYXJ5LWFjNTdkZWYyLTgzNGUtNGVjZC04YjkxLTQ0Y2ExNDUyNGZkMCIsCiAgImdlbmVyYXRpb24iOiAiMTUyOTAwNTM5Nzk4MzE5MCIsCiAgIm1ldGFnZW5lcmF0aW9uIjogIjQiLAogICJ0aW1lQ3JlYXRlZCI6ICIyMDE4LTA2LTE0VDE5OjQzOjE3Ljk4MloiLAogICJ1cGRhdGVkIjogIjIwMTgtMDYtMTRUMTk6NDM6MjAuNzgzWiIsCiAgInN0b3JhZ2VDbGFzcyI6ICJTVEFOREFSRCIsCiAgInRpbWVTdG9yYWdlQ2xhc3NVcGRhdGVkIjogIjIwMTgtMDYtMTRUMTk6NDM6MTcuOTgyWiIsCiAgInNpemUiOiAiOSIsCiAgIm1kNUhhc2giOiAiNjNNNkFNREowemJtVnBHamVyVkNrdz09IiwKICAibWVkaWFMaW5rIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2Rvd25sb2FkL3N0b3JhZ2UvdjEvYi9yaXNlbWVkaWFsaWJyYXJ5LWFjNTdkZWYyLTgzNGUtNGVjZC04YjkxLTQ0Y2ExNDUyNGZkMC9vL3Rlc3QxP2dlbmVyYXRpb249MTUyOTAwNTM5Nzk4MzE5MCZhbHQ9bWVkaWEiLAogICJjYWNoZUNvbnRyb2wiOiAiQ2FjaGUtQ29udHJvbDpwdWJsaWMsIG1heC1hZ2U9ODY0MDAiLAogICJtZXRhZGF0YSI6IHsKICAgICJ0cmFzaGVkIjogImZhbHNlIgogIH0sCiAgImNyYzMyYyI6ICJNM20weWc9PSIsCiAgImV0YWciOiAiQ05iLzdQejAwOXNDRUFRPSIKfQo=",
+        "attributes": {
+          "bucketId": "risemedialibrary-ac57def2-834e-4ecd-8b91-44ca14524fd0",
+          "objectId": "test1",
+          "objectGeneration": "1529005397983190",
+          "eventTime": "2018-06-14T19:43:20.783423Z",
+          "eventType": "OBJECT_METADATA_UPDATE",
+          "payloadFormat": "JSON_API_V1",
+          "notificationConfig": "projects/_/buckets/risemedialibrary-ac57def2-834e-4ecd-8b91-44ca14524fd0/notificationConfigs/2"
+        },
+        "message_id": "118638799573758",
+        "messageId": "118638799573758",
+        "publish_time": "2018-06-14T19:43:20.902Z",
+        "publishTime": "2018-06-14T19:43:20.902Z"
+      },
+      "subscription": "projects/messaging-service-180514/subscriptions/pubsubconnector"
+    };
+
+    connector.handleRequest(req, res);
+
+    assert.deepEqual(rp.post.lastCall.args[0].body, {
+      "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
+      "version": `${req.body.message.attributes.objectGeneration}`,
+      "type": "ADD"
+    });
+  });
+
+  it("sends no message when trashed metadata hasn't changed", () => {
+    req.body = {
+      "message": {
         "data": "ewogICJraW5kIjogInN0b3JhZ2Ujb2JqZWN0IiwKICAiaWQiOiAicmlzZW1lZGlhbGlicmFyeS03ZDk0OGFjNy1kZWNjLTRlZDMtYWE5Yy05YmE0M2JkYTkxZGMvdGltb3RoeS1lYmVybHktNTE1ODAxLXVuc3BsYXNoLmpwZy8xNTI4OTk3OTQyNzQ0MzUxIiwKICAic2VsZkxpbmsiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vc3RvcmFnZS92MS9iL3Jpc2VtZWRpYWxpYnJhcnktN2Q5NDhhYzctZGVjYy00ZWQzLWFhOWMtOWJhNDNiZGE5MWRjL28vdGltb3RoeS1lYmVybHktNTE1ODAxLXVuc3BsYXNoLmpwZyIsCiAgIm5hbWUiOiAidGltb3RoeS1lYmVybHktNTE1ODAxLXVuc3BsYXNoLmpwZyIsCiAgImJ1Y2tldCI6ICJyaXNlbWVkaWFsaWJyYXJ5LTdkOTQ4YWM3LWRlY2MtNGVkMy1hYTljLTliYTQzYmRhOTFkYyIsCiAgImdlbmVyYXRpb24iOiAiMTUyODk5Nzk0Mjc0NDM1MSIsCiAgIm1ldGFnZW5lcmF0aW9uIjogIjMiLAogICJjb250ZW50VHlwZSI6ICJpbWFnZS9qcGVnIiwKICAidGltZUNyZWF0ZWQiOiAiMjAxOC0wNi0xNFQxNzozOTowMi43NDNaIiwKICAidXBkYXRlZCI6ICIyMDE4LTA2LTE0VDE3OjM5OjA1LjExNFoiLAogICJzdG9yYWdlQ2xhc3MiOiAiU1RBTkRBUkQiLAogICJ0aW1lU3RvcmFnZUNsYXNzVXBkYXRlZCI6ICIyMDE4LTA2LTE0VDE3OjM5OjAyLjc0M1oiLAogICJzaXplIjogIjE3MjU5NzkiLAogICJtZDVIYXNoIjogIlJqZTZIangwYkVxTFRwVW14ajNqMEE9PSIsCiAgIm1lZGlhTGluayI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9kb3dubG9hZC9zdG9yYWdlL3YxL2IvcmlzZW1lZGlhbGlicmFyeS03ZDk0OGFjNy1kZWNjLTRlZDMtYWE5Yy05YmE0M2JkYTkxZGMvby90aW1vdGh5LWViZXJseS01MTU4MDEtdW5zcGxhc2guanBnP2dlbmVyYXRpb249MTUyODk5Nzk0Mjc0NDM1MSZhbHQ9bWVkaWEiLAogICJjYWNoZUNvbnRyb2wiOiAiQ2FjaGUtQ29udHJvbDpwdWJsaWMsIG1heC1hZ2U9ODY0MDAiLAogICJtZXRhZGF0YSI6IHsKICAgICJ0aHVtYm5haWwiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL21VSmFtR25wRXBkWmNSaTFBT0ptRVI0blo5WU5TcW5ZcFFjWmk1Y1NjV0RaVHRIX1BNSnRMbWU3MVNpOWYyam5kdEV6Y3F5dkNzb2taWkI4YTljMCIKICB9LAogICJjcmMzMmMiOiAiTXB1RjVRPT0iLAogICJldGFnIjogIkNKK3E5Wm5aMDlzQ0VBTT0iCn0K",
         "attributes": {
           "objectGeneration": "1528997942744351",
@@ -132,11 +162,7 @@ describe("Connector", ()=>{
 
     connector.handleRequest(req, res);
 
-    assert.deepEqual(rp.post.lastCall.args[0].body, {
-      "filePath": `${req.body.message.attributes.bucketId}/${req.body.message.attributes.objectId}`,
-      "version": `${req.body.message.attributes.objectGeneration}`,
-      "type": "ADD"
-    });
+    assert.equal(rp.post.called, false);
   });
 
   it("skip sending message when there are a event type OBJECT_DELETE and a overwrittenByGeneration attribute", ()=>{

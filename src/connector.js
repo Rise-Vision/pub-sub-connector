@@ -36,10 +36,11 @@ const handleMetadataUpdate = (attributes, base64Data) => {
 
   console.log(`Handling metadata update: ${JSON.stringify(metadata)}`);
 
-  if (metadata && metadata.trashed === 'true') {
-    return sendMessage("DELETE", attributes);
+  if (metadata && metadata.trashed) {
+    const message = metadata.trashed === 'true' ? "DELETE" : "ADD";
+    return sendMessage(message, attributes);
   }
-  return sendMessage("ADD", attributes);
+  return Promise.resolve();
 }
 
 const handleBody = (body) => {
