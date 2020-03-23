@@ -3,7 +3,7 @@ version: 2
 jobs:
   "test":
     docker: &DOCKERIMAGE
-      - image: jenkinsrise/cci-v2-docker-gcloud:0.0.4
+      - image: jenkinsrise/gcloud-nodejs-npm-redis:latest
     steps:
       - checkout
       - restore_cache:
@@ -15,8 +15,7 @@ jobs:
             - ./node_modules
       - run: npm test
   "setup_package_version":
-    docker: &DOCKERIMAGE
-      - image: jenkinsrise/cci-v2-docker-gcloud:0.0.3
+    docker: *DOCKERIMAGE
     steps:
       - checkout
       - run: if [ -z $(grep version package.json |grep -o '[0-9.]*') ]; then echo Version must be specified in package.json; exit 1; fi
