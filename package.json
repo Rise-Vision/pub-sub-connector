@@ -1,6 +1,6 @@
 {
   "name": "pub-sub-connector",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Rise Vision Pub Sub Connector",
   "main": "index.js",
   "scripts": {
@@ -23,20 +23,21 @@
   },
   "homepage": "https://github.com/Rise-Vision/pub-sub-connector#readme",
   "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.2",
-    "request": "^2.83.0",
-    "request-promise-native": "^1.0.5"
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8"
   },
   "devDependencies": {
-    "eslint": "^4.10.0",
+    "eslint": "^6.8.0",
     "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "mocha": "^4.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "mkdirp": "^0.5.3",
+    "mocha": "^7.1.1",
     "simple-mock": "^0.8.0",
-    "superagent": "^3.8.1"
+    "superagent": "^3.8.3"
   }
 }
