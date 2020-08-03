@@ -1,6 +1,7 @@
 const rp = require('request-promise-native');
 const gkeHostname = "messaging-service"
 const msHost = process.env.NODE_ENV === "test" ? "127.0.0.1:8081" : gkeHostname;
+const EMPTY_JSON_BASE64 = "e30=";
 
 const sendMessage = (type, attributes) => {
   const options = {
@@ -15,7 +16,15 @@ const sendMessage = (type, attributes) => {
   return rp.post(options);
 }
 
-const handleFinalize = (attributes) => {
+const handleFinalize = (attributes, base64Data = EMPTY_JSON_BASE64) => {
+  const data = Buffer.from(base64Data, 'base64').toString('utf8');
+  const gcsObject = JSON.parse(data);
+  const metadata = gcsObject.metadata;
+
+  if (metadata && metadata.trashed && metadata.trashed === 'true') {
+    return sendMessage("DELETE", attributes);
+  }
+
   if (attributes.overwroteGeneration) {
     return sendMessage("UPDATE", attributes);
   }
@@ -29,7 +38,7 @@ const handleDelete = (attributes) => {
   return Promise.resolve();
 }
 
-const handleMetadataUpdate = (attributes, base64Data) => {
+const handleMetadataUpdate = (attributes, base64Data = EMPTY_JSON_BASE64) => {
   const data = Buffer.from(base64Data, 'base64').toString('utf8');
   const gcsObject = JSON.parse(data);
   const metadata = gcsObject.metadata;
@@ -50,7 +59,7 @@ const handleBody = (body) => {
     case "OBJECT_DELETE":
       return handleDelete(attributes);
     case "OBJECT_FINALIZE":
-      return handleFinalize(attributes);
+      return handleFinalize(attributes, body.message.data);
     case "OBJECT_METADATA_UPDATE":
       return handleMetadataUpdate(attributes, body.message.data);
     default:

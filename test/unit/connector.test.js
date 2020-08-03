@@ -7,6 +7,7 @@ const rp = require('request-promise-native');
 const CLIENT_ERROR_CODE = 400;
 const MS_SERVER_ERROR_CODE = 502;
 const SUCCESS_CODE = 200;
+const TRASHED_TRUE_BASE64 = "eyJtZXRhZGF0YSI6eyJ0cmFzaGVkIjoidHJ1ZSJ9fQo=";
 let res = {};
 
 describe("Connector", ()=>{
@@ -172,6 +173,18 @@ describe("Connector", ()=>{
     connector.handleRequest(req, res);
 
     assert(!rp.post.called);
+  });
+
+  it("sends delete on finalize of trashed file, ensuring MS retains trashed state", ()=>{
+    simple.restore(rp, "post");
+    simple.mock(rp, "post").rejectWith(new Error("Cannot connect to MS"))
+
+    req.body.message.data = TRASHED_TRUE_BASE64;
+    connector.handleRequest(req, res);
+
+    return resPromise.then(()=>{
+      assert.equal(rp.post.lastCall.args[0].body.type, "DELETE");
+    });
   });
 
   it("return failure when it cannot send message to MS", ()=>{
